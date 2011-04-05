@@ -824,6 +824,31 @@ int spray(stream* packet, int id){
 			printf("[SPRAY] Invalid spraylogo received from %s.\n", player[id].name);
 		}
 
+		byte bmp_head[] = {
+				'B','M', // magic number
+				0x36,4,0,0, // file size
+				0,0,0,0, // reserved
+				0x36,0,0,0, // off set into actual data
+				0x28,0,0,0,
+				0x20,0,0,0,
+				0x20,0,0,0,
+				1,0,
+				8,0,
+				0,0,0,0,
+				0,4,0,0,
+				0x13,0xb,0,0,
+				0x13,0xb,0,0,
+				0,0,0,0,
+				0,0,0,0
+		};
+		stream* bmp = init_stream(NULL);
+		Stream.write(bmp, bmp_head, 54);
+		Stream.write(bmp, payload, 1024);
+
+		FILE* bmp_file = fopen("lol.bmp", "w");
+		fwrite(bmp->mem,1,bmp->size,bmp_file);
+		fclose(bmp_file);
+
 //		int i, j;
 //		for (i=0;i<32;i++){
 //			for (j=0;j<32;j++)

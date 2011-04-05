@@ -219,7 +219,7 @@ unsigned short GetServerStatus(void)
 	{
 		serverstatus += 32;
 	}
-	if (0) //LuaScripts
+	if (1) //LuaScripts
 	{
 		serverstatus += 64;
 	}

@@ -8,6 +8,8 @@
 
 #include "packets.h"
 
+#define INT(i) (((byte*)&(i))[0]), (((byte*)&(i))[1]), (((byte*)&(i))[2]), (((byte*)&(i))[3])
+
 /**
  * \fn int unknown(unsigned char *message, int length, unsigned char *buffer, int size, int position)
  * \brief every unknown packet lands here
@@ -411,26 +413,20 @@ int teamchange(stream* packet, int id){
  * \param writesocket the socket where it was read
  * \return read bytes (specific: 5)
  */
+
 int ping_serverlist(stream* packet, struct sockaddr_in *client){
 	CHECK_STREAM(packet, 4);
 
-	unsigned char *tempbuffer = malloc(packet->size+3);
-	if (tempbuffer == NULL)
-		error_exit("Memory error ( ping_serverlist() )");
+	// <- 0000   01 00 fa [## ##] aa bb
+	// -> 0000   01 00 fa [## ##] aa bb
 
-	tempbuffer[0] = 0x01;
-	tempbuffer[1] = 0x00;
-	tempbuffer[2] = packet->mem[0];
-	tempbuffer[3] = packet->mem[1];
-	tempbuffer[4] = packet->mem[2];
-	//memcpy(tempbuffer + 3, packet->mem, packet->size);
+	int csum = Stream.read_int(packet);
+	byte buf[] = {1,0,0xfa,INT(csum)};
 
-	send_now(tempbuffer, 5, *client);
-	//udp_send(writesocket, tempbuffer, 5, client);
-	free(tempbuffer);
-	Stream.read(packet, 4);
+	send_now(buf, 7, *client);
 	return 1;
 }
+
 
 int serverinfo_request(stream* packet, struct sockaddr_in *client){
 	CHECK_STREAM(packet,1);
@@ -454,7 +450,6 @@ int serverinfo_request(stream* packet, struct sockaddr_in *client){
 			Stream.write_byte(buf, sv_gamemode);
 		Stream.write_byte(buf, bot_count);
 		send_now(buf->mem, buf->size, *client);
-		//udp_send(sock, buf->mem, buf->size, client);
 	}
 	free(buf);
 	Stream.read(packet, packet->size);
@@ -943,57 +938,7 @@ int rcon(stream* packet, int id){
 	return 1;
 }
 
-// optable
-void init_optable(){
-	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
-	unknown_table = (unknown_handler*)malloc(sizeof(known_handler)*0x100);
-	memset(known_table, 0, 0x400);
-	memset(unknown_table, 0, 0x400);
 
-	// TODO: fill out the rest of the packets in here.
-#define K(i,a) known_table[(i)] = (known_handler)&(a)
-	K(1, confirmation_known);
-	K(3, connection_setup_known);
-	K(7, fire);
-	K(8, advanced_fire);
-	K(9, weaponchange);
-	K(10, posupdaterun);
-	K(11, posupdatewalk);
-	K(12, rotupdate);
-	K(13, posrotupdaterun);
-	K(14, posrotupdatewalk);
-	K(16, reload);
-	//K(17, hit);
-	K(19, killmsg);
-	K(20, teamchange);
-	//K(21, spawn_msg); <- client?
-	//K(22, round_start);
-	K(23, buy);
-	K(24, drop);
-	//K(25, pickup);
-	//K(27, projectile);
-
-	K(28, spray);
-	K(32, specpos);
-	K(39, respawnrequest);
-	K(236, rcon_pw);
-	K(0xf1, rcon);
-	K(240, chatmessage);
-	K(249, ping_ingame);
-	K(252, joinroutine_known);
-	K(253, leave);
-#undef K
-
-#define U(i,a) unknown_table[(i)] = (unknown_handler)&(a)
-	U(1, confirmation_unknown);
-	U(3, connection_setup_unknown);
-	U(27, usgn_add);
-	U(28, usgn_update);
-	U(250, ping_serverlist);
-	U(251, serverinfo_request);
-	U(252, joinroutine_unknown);
-#undef U
-}
 
 
 // auxiliary functions
@@ -1170,3 +1115,57 @@ void start_stream(){
 	Stream.read_str2 = &read_str2;
 	Stream.write_str2 = &write_str2;
 }
+
+// optable
+void init_optable(){
+	known_table = (known_handler*)malloc(sizeof(known_handler)*0x100);
+	unknown_table = (unknown_handler*)malloc(sizeof(known_handler)*0x100);
+	memset(known_table, 0, 0x400);
+	memset(unknown_table, 0, 0x400);
+
+	// TODO: fill out the rest of the packets in here.
+#define K(i,a) known_table[(i)] = (known_handler)&(a)
+	K(1, confirmation_known);
+	K(3, connection_setup_known);
+	K(7, fire);
+	K(8, advanced_fire);
+	K(9, weaponchange);
+	K(10, posupdaterun);
+	K(11, posupdatewalk);
+	K(12, rotupdate);
+	K(13, posrotupdaterun);
+	K(14, posrotupdatewalk);
+	K(16, reload);
+	//K(17, hit);
+	K(19, killmsg);
+	K(20, teamchange);
+	//K(21, spawn_msg); <- client?
+	//K(22, round_start);
+	K(23, buy);
+	K(24, drop);
+	//K(25, pickup);
+	//K(27, projectile);
+
+	K(28, spray);
+	K(32, specpos);
+	K(39, respawnrequest);
+	K(236, rcon_pw);
+	K(0xf1, rcon);
+	K(240, chatmessage);
+	K(249, ping_ingame);
+	K(252, joinroutine_known);
+	K(253, leave);
+#undef K
+
+#define U(i,a) unknown_table[(i)] = (unknown_handler)&(a)
+	U(1, confirmation_unknown);
+	U(3, connection_setup_unknown);
+	U(27, usgn_add);
+	U(28, usgn_update);
+	U(250, ping_serverlist);
+	U(251, serverinfo_request);
+	U(252, joinroutine_unknown);
+#undef U
+}
+
+#undef INT

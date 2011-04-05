@@ -152,7 +152,7 @@ void ReadServerCfg(const char* cfg)
 	sv_name = sv_name ? sv_name : (unsigned char *) GetValue(clsr, "sv_name", "Alpha Custom CS2D Server");
 	sv_map = (unsigned char *) GetValue(clsr, "sv_map", "de_cs2d");
 	sv_hostport = tointeger(GetValue(clsr, "sv_hostport", "36963"));
-	sv_maxplayers = tointeger(GetValue(clsr, "sv_maxplayers", "32")) + 1;
+	sv_maxplayers = tointeger(GetValue(clsr, "sv_maxplayers", "32"));
 	sv_fps = tointeger(GetValue(clsr, "sv_fps", "500"));
 	sv_lcbuffer = tointeger(GetValue(clsr, "sv_lcbuffer", "100"));
 	sv_fow = tointeger(GetValue(clsr, "sv_fow", "0"));
@@ -168,7 +168,7 @@ void ReadServerCfg(const char* cfg)
 	mp_c4timer = tointeger(GetValue(clsr, "mp_c4timer", "35"));
 	mp_infammo = tointeger(GetValue(clsr, "mp_infammo", "0"));
 	mp_respawndelay = tointeger(GetValue(clsr, "mp_respawndelay", "0"));
-	mp_specmode = tointeger(GetValue(clsr, "mp_specmode", "0"));
+	mp_specmode = tointeger(GetValue(clsr, "mp_specmode", "1"));
 	mp_startmoney = tointeger(GetValue(clsr, "mp_startmoney", "1000"));
 	mp_dmspawnmoney = tointeger(GetValue(clsr, "mp_dmspawnmoney", "32000"));
 }

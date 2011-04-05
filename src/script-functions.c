@@ -395,40 +395,40 @@ int OnFire(int id)
 	short dmg;
 
 	switch (weapons[wpn].special) { //lmao 76543210
-		case 7: //TODO: grenades
-			return 0;
-		case 6: //shotgun
-			dmg = weapons[wpn].weapondamage;
-			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
-			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
-			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
-			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
-			simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
-			return 0;
-		case 5:
-		case 4:
-		case 3: //scoped or melee weapons
-			if (player[id].wpntable[wpn].status == 2) {
-				dmg = weapons[wpn].weapondamage_z1;
-				break;
-			} else if (player[id].wpntable[wpn].status == 3) {
-				dmg = weapons[wpn].weapondamage_z2;
-				break;
-			}
-		case 2: //burst weapon
-			if (player[id].wpntable[wpn].status == 2) {
-				dmg = 0.64 * weapons[wpn].weapondamage;
-				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 + 12 * (float)rand() / RAND_MAX);
-				simulate_bullet(id, wpn, dmg, player[id].rotation + 6 + 8 * (float)rand() / RAND_MAX);
-				simulate_bullet(id, wpn, dmg, player[id].rotation - 6 - 8 * (float)rand() / RAND_MAX);
-				return 0;
-			}
-		case 1: //silencer does nothing
-		case 0: //regular
-			dmg = weapons[wpn].weapondamage;
+	case 7: //TODO: grenades
+		return 0;
+	case 6: //shotgun
+		dmg = weapons[wpn].weapondamage;
+		simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+		simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+		simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+		simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+		simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * 20);
+		return 0;
+	case 5:
+	case 4:
+	case 3: //scoped or melee weapons
+		if (player[id].wpntable[wpn].status == 2) {
+			dmg = weapons[wpn].weapondamage_z1;
 			break;
-		default:
-			return 1;
+		} else if (player[id].wpntable[wpn].status == 3) {
+			dmg = weapons[wpn].weapondamage_z2;
+			break;
+		}
+	case 2: //burst weapon
+		if (player[id].wpntable[wpn].status == 2) {
+			dmg = 0.64 * weapons[wpn].weapondamage;
+			simulate_bullet(id, wpn, dmg, player[id].rotation - 6 + 12 * (float)rand() / RAND_MAX);
+			simulate_bullet(id, wpn, dmg, player[id].rotation + 6 + 8 * (float)rand() / RAND_MAX);
+			simulate_bullet(id, wpn, dmg, player[id].rotation - 6 - 8 * (float)rand() / RAND_MAX);
+			return 0;
+		}
+	case 1: //silencer does nothing
+	case 0: //regular
+		dmg = weapons[wpn].weapondamage;
+		break;
+	default:
+		return 1;
 	}
 
 	simulate_bullet(id, wpn, dmg, player[id].rotation + (2 * (float)rand() / RAND_MAX - 1) * weapons[wpn].accuracy);
@@ -464,45 +464,26 @@ int OnBuyAttempt(int id, int wpnid)
 
 	//buyzone check
 	int b;
-	if (player[id].team == 1)
-	{
-		for (b = 0; b <= tspawncount; b++)
-		{
-			int playerx = *player[id].x;
-			int playery = *player[id].y;
-			int tempx = tspawnx[b] * 32;
-			int tempy = tspawny[b] * 32;
-			//If player in buyzone (5*5)
-			if (playerx >= tempx - 64 && playerx <= tempx + 64
-					&& playery >= tempy - 64 && playery
-					<= tempy + 64)
-			{
+	int tilex = *player[id].x / 32;
+	int tiley = *player[id].y / 32;
+	int tempx, tempy;
+	if (player[id].team == 1) {
+		for (b = 0; b <= tspawncount; b++) {
+			if (abs(tilex - tspawnx[b]) <= 2 && abs(tiley - tspawny[b]) <= 2) {
 				b = 0;
 				break;
 			}
 		}
-	}
-	else if (player[id].team == 2)
-	{
-		for (b = 0; b <= ctspawncount; b++)
-		{
-			int playerx = *player[id].x;
-			int playery = *player[id].y;
-			int tempx = ctspawnx[b] * 32;
-			int tempy = ctspawny[b] * 32;
-			//If player in buyzone (5*5)
-			if (playerx >= tempx - 64 && playerx <= tempx + 64
-					&& playery >= tempy - 64 && playery
-					<= tempy + 64)
-			{
+	} else if (player[id].team == 2) {
+		for (b = 0; b <= ctspawncount; b++) {
+			if (abs(tilex - ctspawnx[b]) <= 2 && abs(tiley - ctspawny[b]) <= 2) {
 				b = 0;
 				break;
 			}
 		}
 	}
 
-	if (b > 0)
-	{
+	if (b > 0) {
 		SendBuyFailedMessage(id, 255);
 		return 1;
 	}
@@ -513,31 +494,27 @@ int OnBuyAttempt(int id, int wpnid)
 	////
 
 	//money check
-	if (wpnid != 57 && wpnid != 58 && player[id].money < weapons[wpnid].price)
-	{
+	if (wpnid != 57 && wpnid != 58 && player[id].money < weapons[wpnid].price) {
 		SendBuyFailedMessage(id, 253);
 		return 1;
 	}
 	////
 
 	//unbuyable or doesn't exist or wrong team check
-	if (weapons[wpnid].name == NULL || weapons[wpnid].team == 3)
-	{
+	if (weapons[wpnid].name == NULL || weapons[wpnid].team == 3) {
 		SendBuyFailedMessage(id, 244);
 		return 1;
 	}
 	
 
-	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team)
-	{
+	if (weapons[wpnid].team != 0 && weapons[wpnid].team != player[id].team) {
 		SendBuyFailedMessage(id, 252);
 		return 1;
 	}
 	////
 
 	//already equipped check
-	if (player[id].wpntable[wpnid].status > 0)
-	{
+	if (player[id].wpntable[wpnid].status > 0) {
 		SendBuyFailedMessage(id, 251);
 		return 1;
 	}
@@ -567,66 +544,49 @@ int OnBuyAttempt(int id, int wpnid)
 int OnBuy(int id, int wpnid)
 {
 	int i;
-	switch (wpnid)
-	{
+	switch (wpnid) {
 	case 57: //armor
-	case 58: //armor
-	{
-		if (player[id].armor < weapons[wpnid].price / 10)
-		{
-			if (player[id].money > weapons[wpnid].price)
-			{
+	case 58: {//armor
+		if (player[id].armor < weapons[wpnid].price / 10) {
+			if (player[id].money > weapons[wpnid].price) {
 				player[id].money -= weapons[wpnid].price - player[id].armor * 10;
 				player[id].armor = weapons[wpnid].price / 10;
-			}
-			else
-			{
+			} else {
 				SendBuyFailedMessage(id, 253);
 				return 1;
 			}
-		}
-		else
-		{
+		} else {
 			SendBuyFailedMessage(id, 251);
 			return 1;
 		}
 		break;
 	}
-	case 61: //primary ammo
-	{
+	case 61: { //primary ammo
 		int bought = 0;
-		for (i = 0; i <= 0xFF; i++)
-		{
+		for (i = 0; i <= 0xFF; i++) {
 			if (weapons[i].slot == 1 && player[id].wpntable[i].status > 0 &&
-				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full weapon in slot 1
-			{
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) { //if player has non-full weapon in slot 1
 				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
 				bought = 1;
 			}
 		}
-		if (bought == 0)
-		{
+		if (bought == 0) {
 			SendBuyFailedMessage(id, 248);
 			return 1;
-		}
-		else
+		} else
 			player[id].money -= weapons[wpnid].price;
 		break;
 	}
-	case 62: //secondary ammo
-	{
+	case 62: {//secondary ammo
 		int bought = 0;
-		for (i = 0; i <= 6; i++)
-		{
+		for (i = 0; i <= 6; i++) {
 			if (player[id].wpntable[i].status > 0 &&
-				player[id].wpntable[i].ammo2 < weapons[i].ammo2) //if player has non-full pistol
-			{
+				player[id].wpntable[i].ammo2 < weapons[i].ammo2) { //if player has non-full pistol
 				player[id].wpntable[i].ammo2 = weapons[i].ammo2;
 				bought = 1;
 			}
 		}
-		if (bought == 0)
-		{
+		if (bought == 0) {
 			SendBuyFailedMessage(id, 248);
 			return 1;
 		}
@@ -634,24 +594,19 @@ int OnBuy(int id, int wpnid)
 			player[id].money -= weapons[wpnid].price;
 		break;
 	}
-	default:
-	{
+	default: {
 		player[id].money -= weapons[wpnid].price;
-		if (weapons[wpnid].slot > 0)
-		{
-			if (weapons[wpnid].slot < 3) //dont increase # of weapons only for slot 1 or 2
-			{
-				for (i = 0; i <= 0xFF; i++)
-				{
-					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot)
-					{
+		if (weapons[wpnid].slot > 0) {
+			player[id].actualweapon = wpnid;
+			if (weapons[wpnid].slot < 3) { //dont increase # of weapons only for slot 1 or 2
+				for (i = 0; i <= 0xFF; i++) {
+					if (player[id].wpntable[i].status > 0 && weapons[i].slot == weapons[wpnid].slot) {
 						RemovePlayerWeapon(id, i);
 						SendDropMessage(id, i, player[id].wpntable[i].ammo1, player[id].wpntable[i].ammo2);
 						break;
 					}
 				}
 			}
-			player[id].actualweapon = wpnid;
 		}
 		GivePlayerWeapon(id, wpnid);
 		break;

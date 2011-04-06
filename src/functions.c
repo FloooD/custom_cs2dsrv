@@ -522,25 +522,30 @@ int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *
 {
 	if (!ox) {float x; ox = &x;}
 	if (!oy) {float y; oy = &y;}
-	if (fabsf(sqx) <= sqhlen && fabsf(sqy) <= sqhlen) {
+	int cx = (fabsf(sqx) <= sqhlen);
+	int cy = (fabsf(sqy) <= sqhlen);
+	if (cx && cy) {
 		if (fabsf(ex - sqx) <= sqhlen && fabsf(ey - sqy) <= sqhlen) {
 			*ox = ex; *oy = ey;
 			return 1;
-		} else
-			sqhlen *= -1;
+		}
+		sqhlen *= -1;
 	}
-	if (ey != 0) {
-		*oy = (ey > 0) ? sqy - sqhlen: sqy + sqhlen;
-		if (((ey >= *oy && *oy >= 0) || (ey <= *oy && *oy <= 0))
-			&& (fabsf((*ox = (*oy) * ex / ey) - sqx) <= fabsf(sqhlen)))
-				return 1;
+	*ox = (ex >= 0) ? sqx - sqhlen : sqx + sqhlen;
+	*oy = (ey >= 0) ? sqy - sqhlen : sqy + sqhlen;
+	if ((ex != 0) && ((!(cx ^ cy) && ((fabsf(ey * *ox) >= fabsf(ex * *oy)) ^ (sqhlen < 0))) || (cy && !cx)))
+		goto collision;
+	if (ey == 0) goto no_collision;
+	float temp = ex; ex = ey, ey = temp;
+	temp = sqx; sqx = sqy; sqy = temp;
+	float *tptr; tptr = ox; ox = oy; oy = tptr;
+	collision:
+	if ((*ox * ex >= 0) && (fabsf(*ox) <= fabsf(ex))) {
+		*oy = (*ox) * ey / ex;
+		if (fabsf(*oy - sqy) <= fabsf(sqhlen))
+			return 1;
 	}
-	if (ex != 0) {
-		*ox = (ex > 0) ? sqx - sqhlen: sqx + sqhlen;
-		if (((ex >= *ox && *ox >= 0) || (ex <= *ox && *ox <= 0))
-			&& (fabsf((*oy = (*ox) * ey / ex) - sqy) <= fabsf(sqhlen)))
-				return 1;
-	}
+	no_collision:
 	return (*ox = *oy = 0);
 }
 /**

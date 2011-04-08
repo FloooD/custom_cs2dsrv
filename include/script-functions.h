@@ -45,4 +45,6 @@ int OnTeamChangeAttempt(int id, unsigned char team, unsigned char skin);
 int OnTeamChange(int id, unsigned char team, unsigned char skin);
 int OnMoveAttempt(int id, unsigned short x, unsigned short y, int status);
 int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short ammo2);
+int OnSecond(void);
+int OnFrame(void);
 #endif

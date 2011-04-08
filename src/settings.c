@@ -18,11 +18,12 @@ int lua_strict = 0;
 int lua_debug = 0;
 int debug = 0;
 
-unsigned char pre_authcode[] = "5TWs3Obv7";
+unsigned char pre_authcode[] = "roflmfao?";
 char startweapons[] = { 50 };
 unsigned short lcbuffer[LC_BUFFER_SIZE][MAX_CLIENTS][2];
 int fpsnow = 0;
 int dropped_weapons_count = 0;
+int uptime = 0;
 
 unsigned char *sv_name = NULL;
 unsigned char *sv_map = NULL;

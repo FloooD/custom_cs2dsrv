@@ -160,9 +160,9 @@ unsigned int mtime(void)
 	unsigned int ms = (unsigned int) (value2 & 0xffffffff);
 	return ms;
 #else
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return (unsigned int)(tv.tv_sec*1000 + (tv.tv_usec / 1000));
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (unsigned int)(ts.tv_sec*1000 + (ts.tv_nsec / 1000000));
 #endif
 }
 

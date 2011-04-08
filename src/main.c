@@ -105,15 +105,8 @@ int main(int argc, char *argv[]){
 	init_optable();
 	start_stream();
 
-
-
-	/**
-	 * \var needed for ExecuteFunctionsWithTime()
-	 */
-	time_t checktime;
-	time(&checktime);
 #ifdef _WIN32
-
+//hahahahaha windows lol
 #else
 	const int inc = NS_PER_S / sv_fps;
 	int frame = 0;
@@ -133,23 +126,19 @@ int main(int argc, char *argv[]){
 #else
 		frame++;
 		next.tv_nsec += inc;
-		while (next.tv_nsec > NS_PER_S)
-		{
+		while (next.tv_nsec > NS_PER_S) { //happens exactly once a second
 			next.tv_nsec -= NS_PER_S;
 			next.tv_sec++;
 
 			fpsnow = frame - previous;
 			previous = frame;
-			//printf("current fps: %d\n", fpsnow); //debugging
+			ExecuteFunctionsWithTime(sock);
 		}
 #endif
-
 		memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
 		CheckForTimeout(sock);
-		ExecuteFunctionsWithTime(&checktime, sock); // refactor into scheduler
 		CheckAllPlayerForReload(sock);
-
-
+		OnFrame();
 
 		FD_ZERO(&descriptor);
 		FD_SET(sock, &descriptor);
@@ -211,9 +200,7 @@ int main(int argc, char *argv[]){
 		{
 			clock_nanosleep(CLOCK_MONOTONIC,
 				TIMER_ABSTIME, &next, NULL);
-		}
-		else //THIS IS LAGGGGGGGGGGGGGGGGGGGGG
-		{
+		} else {
 			next.tv_nsec = current.tv_nsec +
 				(current.tv_sec - next.tv_sec) * NS_PER_S;
 		}

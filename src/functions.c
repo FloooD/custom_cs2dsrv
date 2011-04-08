@@ -380,27 +380,20 @@ unsigned char *GetEncodedString(unsigned char *string, int length)
 void CheckAllPlayerForReload(int writesocket)
 {
 	int i;
-	for (i = 1; i <= sv_maxplayers; i++)
-	{
-		if (player[i].reloading != 0)
-		{
-			if (player[i].reloadtimer <= mtime())
+	for (i = 1; i <= sv_maxplayers; i++) {
+		if (player[i].reloading != 0 && player[i].reloadtimer <= mtime()) {
+			if ((player[i].wpntable[player[i].reloading].ammo2 -=
+				weapons[player[i].reloading].ammo1 -
+				player[i].wpntable[player[i].reloading].ammo1) < 0)
 			{
-				if ((player[i].wpntable[player[i].reloading].ammo2 -=
-					weapons[player[i].reloading].ammo1 -
-					player[i].wpntable[player[i].reloading].ammo1) < 0)
-				{
-					player[i].wpntable[player[i].reloading].ammo1 =
-						weapons[player[i].reloading].ammo1 + player[i].wpntable[player[i].reloading].ammo2;
-					player[i].wpntable[player[i].reloading].ammo2 = 0;
-				}
-				else //normal
-				{
-					player[i].wpntable[player[i].reloading].ammo1 = weapons[player[i].reloading].ammo1;
-				}
-				SendReloadMessage(i, 2);
-				player[i].reloading = 0;
+				player[i].wpntable[player[i].reloading].ammo1 =
+					weapons[player[i].reloading].ammo1 + player[i].wpntable[player[i].reloading].ammo2;
+				player[i].wpntable[player[i].reloading].ammo2 = 0;
+			} else { //normal
+				player[i].wpntable[player[i].reloading].ammo1 = weapons[player[i].reloading].ammo1;
 			}
+			SendReloadMessage(i, 2);
+			player[i].reloading = 0;
 		}
 	}
 }
@@ -480,24 +473,17 @@ int UsgnUpdate(int writesocket)
 	return 0;
 }
 
-void ExecuteFunctionsWithTime(time_t *checktime, int writesocket)
+void ExecuteFunctionsWithTime(int writesocket) //called once a second
 {
-	time_t actualtime;
-	time(&actualtime);
-	if (*checktime != actualtime) //prevents executing more times than one in a second
-	{
-		if (actualtime % 5 == 0) //execute every 5 seconds
-		{
-			SendPingList(writesocket);
-			//SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
-			PingAllPlayer();
-		}
-		else if (actualtime % 50 == 0)
-		{
-			UsgnUpdate(writesocket);
-		}
-		*checktime = actualtime;
+	uptime++;
+	if (uptime % 5 == 0) { //execute every 5 seconds
+		SendPingList(writesocket);
+		//SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
+		PingAllPlayer();
+	} else if (uptime % 50 == 0) {
+		UsgnUpdate(writesocket);
 	}
+	OnSecond();
 }
 
 size_t u_strlen(unsigned char* buffer)
@@ -562,9 +548,10 @@ void simulate_bullet(int id, unsigned char wpn, short dmg, float rot)
 	float start_y = (float)(*player[id].y);
 	float range_x = 3.0 * (float)weapons[wpn].range * sinf(rot * 0.0174532925);
 	float range_y = -3.0 * (float)weapons[wpn].range * cosf(rot * 0.0174532925);
-	int tile_x = ((int)start_x) / 32;
-	int tile_y = ((int)start_y) / 32;
-	int temp_x, temp_y;
+	int tile_x;
+	int tile_y;
+	int temp_x = (tile_x = ((int)start_x) / 32);
+	int temp_y = (tile_y = ((int)start_y) / 32);
 	int tilemode;
 	
 	int inc_x = 0;
@@ -590,8 +577,6 @@ void simulate_bullet(int id, unsigned char wpn, short dmg, float rot)
 			line_seg_sqr(temp_rx, temp_ry , 32 * (temp_x) + 16 - start_x, 32 * (temp_y) + 16 - start_y, 16, &range_x, &range_y);
 			break;
 		}
-		temp_x = tile_x;
-		temp_y = tile_y;
 		
 		if (0!=inc_x && 1==line_seg_sqr(range_x, range_y, 32 * (temp_x + inc_x) + 16 - start_x, 32 * (temp_y) + 16 - start_y, 16, NULL, NULL))
 			tile_x = temp_x + inc_x;
@@ -599,6 +584,8 @@ void simulate_bullet(int id, unsigned char wpn, short dmg, float rot)
 			tile_y = temp_y + inc_y;
 		if (tile_x == temp_x && tile_y == temp_y)
 			break;
+		temp_x = tile_x;
+		temp_y = tile_y;
 	}
 
 	int frames = (int)player[id].latency * fpsnow / 1000;

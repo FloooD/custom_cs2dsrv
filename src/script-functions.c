@@ -463,19 +463,18 @@ int OnBuyAttempt(int id, int wpnid)
 	//order of checks: buyzone, buytime, money, unbuyable, already have
 
 	//buyzone check
-	int b;
+	int b = 0;
 	int tilex = *player[id].x / 32;
 	int tiley = *player[id].y / 32;
-	int tempx, tempy;
 	if (player[id].team == 1) {
-		for (b = 0; b <= tspawncount; b++) {
+		for (; b <= tspawncount; b++) {
 			if (abs(tilex - tspawnx[b]) <= 2 && abs(tiley - tspawny[b]) <= 2) {
 				b = 0;
 				break;
 			}
 		}
 	} else if (player[id].team == 2) {
-		for (b = 0; b <= ctspawncount; b++) {
+		for (; b <= ctspawncount; b++) {
 			if (abs(tilex - ctspawnx[b]) <= 2 && abs(tiley - ctspawny[b]) <= 2) {
 				b = 0;
 				break;
@@ -654,14 +653,16 @@ int OnChatMessage(int id, unsigned char *message, int team)
 		free(log);
 
 		return 1;
-	}
-	else if (u_strlen(message) >= 4 && strncmp((char *) message, "!fps", 4)
-			== 0)
-	{
+	} else if (u_strlen(message) >= 4 && strncmp((char *) message, "!fps", 4) == 0) {
 		char buffer[30]; //Resulting stringlength unknown: Text = 24 chars
 		sprintf(buffer, "Current server FPS: %d", fpsnow);
 		SendMessageToPlayer(id, buffer, 1);
 		return 1;
+        } else if (u_strlen(message) >= 7 && strncmp((char *) message, "!uptime", 7) == 0) {
+                char buffer[40];
+                sprintf(buffer, "Server uptime (seconds): %d", uptime);
+                SendMessageToPlayer(id, buffer, 1);
+                return 1;
 	}
 
 	if (team == 1)
@@ -754,6 +755,18 @@ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short amm
 		RemovePlayerWeapon(id, wpnid);
 		return 0;
 	}
+	return 1;
+}
+
+int OnSecond(void)
+{
+	INVOKE("second", "");
+	return 1;
+}
+
+int OnFrame(void)
+{
+	INVOKE("always", "");
 	return 1;
 }
 

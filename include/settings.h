@@ -50,6 +50,7 @@ extern unsigned short mp_startmoney;
 extern unsigned short mp_dmspawnmoney;
 
 extern int fpsnow;
+extern int uptime;
 
 #define STARTWEAPONS_COUNT 1
 extern char startweapons[];

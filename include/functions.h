@@ -29,7 +29,7 @@ void CheckAllPlayerForReload(int writesocket);
 struct in_addr GetIp(char *name);
 int UsgnRegister(int writesocket);
 int UsgnUpdate(int writesocket);
-void ExecuteFunctionsWithTime(time_t *checktime, int writesocket);
+void ExecuteFunctionsWithTime(int writesocket);
 size_t u_strlen(unsigned char* buffer);
 int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *ox, float *oy);
 void simulate_bullet(int id, unsigned char wpn, short dmg, float rot);

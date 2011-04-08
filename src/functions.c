@@ -480,7 +480,8 @@ void ExecutePeriodicFunctions(void) //called once a second
 		SendPingList();
 		//SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
 		PingAllPlayer();
-	} else if (uptime % 50 == 0) {
+	}
+	if (uptime % 50 == 0) {
 		UsgnUpdate();
 	}
 }

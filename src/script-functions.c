@@ -760,12 +760,16 @@ int OnDrop(int id, unsigned char wpnid, unsigned short ammo1, unsigned short amm
 
 int OnSecond(void)
 {
+	ExecutePeriodicFunctions();
+	CheckForTimeout();
 	INVOKE("second", "");
 	return 1;
 }
 
 int OnFrame(void)
 {
+	memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
+	CheckAllPlayerForReload();
 	INVOKE("always", "");
 	return 1;
 }

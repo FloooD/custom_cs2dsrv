@@ -180,7 +180,7 @@ void SendKillMessage(int id, int victim)
 	SendToAllOther(victim, buffer2, 8, 1);
 }
 
-void SendPingList(int writesocket){
+void SendPingList(void){
 	stream* buf = init_stream(NULL);
 	Stream.write_byte(buf, 247);
 	Stream.write_byte(buf, onlineplayer);

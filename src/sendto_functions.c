@@ -140,7 +140,7 @@ void SendToAllOther(int id, unsigned char *message, int length, int reliable)
 }
 
 // send_queue
-int check_sendqueue(int sock){ // returns the number of elements sent
+int check_sendqueue(void){ // returns the number of elements sent
 	int threshold = 0x30, i = 0, cur = mtime(); // 48 sends per iteration
 	while (!empty(&send_q) && i++ < threshold){
 		if (peek(&send_q)->cost > cur) return --i; // next element in the send queue isn't ready yet.

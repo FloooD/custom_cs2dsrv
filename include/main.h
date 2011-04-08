@@ -61,5 +61,6 @@
 
 int main();
 void just(byte*, int);
+extern int sock;
 
 #endif // MAIN_H_INCLUDED

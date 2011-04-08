@@ -23,36 +23,36 @@ int create_socket(void)
 	}
 	else
 	{
-		int sock = socket(AF_INET, SOCK_DGRAM, 0);
-		if (sock < 0)
+		int soc = socket(AF_INET, SOCK_DGRAM, 0);
+		if (soc < 0)
 		{
 			socket_error_exit("socket() failed");
 		}
-		return sock;
+		return soc;
 	}
 #else
 
 	const int y = 1;
-	int sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock < 0)
+	int soc = socket(AF_INET, SOCK_DGRAM, 0);
+	if (soc < 0)
 	{
 		socket_error_exit("socket() failed");
 	}
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
-	return sock;
+	setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
+	return soc;
 
 #endif
 	return 0;
 }
 
 /**
- * \fn int bind_socket(int *sock, unsigned long adress, unsigned short port)
+ * \fn int bind_socket(int *soc, unsigned long adress, unsigned short port)
  * \brief bind a socket to a specific IP and port
- * \param *sock socket to bind
+ * \param *soc socket to bind
  * \param adress ip-address to bind
  * \param port port to bind
  */
-void bind_socket(int *sock, unsigned long adress, unsigned short port)
+void bind_socket(int *soc, unsigned long adress, unsigned short port)
 {
 #ifdef _WIN32
 	struct sockaddr_in server;
@@ -61,7 +61,7 @@ void bind_socket(int *sock, unsigned long adress, unsigned short port)
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(adress);
 	server.sin_port = htons(port);
-	if (bind(*sock, (struct sockaddr*) &server, sizeof(server)) == SOCKET_ERROR)
+	if (bind(*soc, (struct sockaddr*) &server, sizeof(server)) == SOCKET_ERROR)
 	{
 		socket_error_exit("bind() failed");
 	}
@@ -71,7 +71,7 @@ void bind_socket(int *sock, unsigned long adress, unsigned short port)
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(adress);
 	server.sin_port = htons(port);
-	if (bind(*sock, (struct sockaddr*)&server, sizeof(server)) < 0)
+	if (bind(*soc, (struct sockaddr*)&server, sizeof(server)) < 0)
 	{
 		socket_error_exit("bind() failed");
 	}

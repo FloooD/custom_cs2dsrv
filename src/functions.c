@@ -108,10 +108,10 @@ void ClearAllPlayer(void)
 }
 
 /**
- * \fn void CheckForTimeout(int writesocket)
+ * \fn void CheckForTimeout(void)
  * \brief check all player for timeout
  */
-void CheckForTimeout(int writesocket)
+void CheckForTimeout(void)
 {
 	int i;
 	for (i = 1; i <= sv_maxplayers; i++)
@@ -274,7 +274,7 @@ int ValidatePacket(unsigned char *message, int id){
 	return 1;
 }
 /**
- * \fn void PacketConfirmation(char *message, int id, int writesocket)
+ * \fn void PacketConfirmation(char *message, int id)
  * \brief sends an confirmation to a player if necessary
  * \param *message pointer to the message
  * \param id player-id
@@ -373,11 +373,11 @@ unsigned char *GetEncodedString(unsigned char *string, int length)
 }
 
 /**
- * \fn void CheckAllPlayerForReload(int writesocket)
+ * \fn void CheckAllPlayerForReload(void)
  * \brief check all player if their reload is ended,
  * send message if necessary, and rise their magazine
  */
-void CheckAllPlayerForReload(int writesocket)
+void CheckAllPlayerForReload(void)
 {
 	int i;
 	for (i = 1; i <= sv_maxplayers; i++) {
@@ -413,7 +413,7 @@ struct in_addr GetIp(char *name)
 	return ip;
 }
 
-int UsgnRegister(int writesocket)
+int UsgnRegister(void)
 {
 	struct sockaddr_in tempclient;
 
@@ -436,14 +436,14 @@ int UsgnRegister(int writesocket)
 	position++;
 
 	//send_now(buffer, 4, tempclient);
-	udp_send(writesocket, buffer, 4, &tempclient); // DO NOT QUEUE
+	udp_send(sock, buffer, 4, &tempclient); // DO NOT QUEUE
 	free(buffer);
 
 	printf("[USGN] Sent ADD request to %s...\n", inet_ntoa(tempclient.sin_addr));
 	return 0;
 }
 
-int UsgnUpdate(int writesocket)
+int UsgnUpdate(void)
 {
 	struct sockaddr_in tempclient;
 
@@ -466,24 +466,23 @@ int UsgnUpdate(int writesocket)
 	position++;
 
 	send_now(buffer, 4, tempclient);
-	//udp_send(writesocket, buffer, 4, &tempclient);
+	//udp_send(sock, buffer, 4, &tempclient);
 	free(buffer);
 
 	printf("[USGN] Sent UPDATE request to %s...\n", inet_ntoa(tempclient.sin_addr));
 	return 0;
 }
 
-void ExecuteFunctionsWithTime(int writesocket) //called once a second
+void ExecutePeriodicFunctions(void) //called once a second
 {
 	uptime++;
 	if (uptime % 5 == 0) { //execute every 5 seconds
-		SendPingList(writesocket);
+		SendPingList();
 		//SendMessageToAll("This is an alpha version! Don't play at it!", 1); //Do not remove or change this until server reaches beta status
 		PingAllPlayer();
 	} else if (uptime % 50 == 0) {
-		UsgnUpdate(writesocket);
+		UsgnUpdate();
 	}
-	OnSecond();
 }
 
 size_t u_strlen(unsigned char* buffer)
@@ -495,6 +494,7 @@ size_t u_strlen(unsigned char* buffer)
  * \fn int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *ox, float *oy)
  * \brief finds first collision between a line segment and a square.
  * 		origin is defined as line segment's starting point.
+ * \how_the_fuck_does_this_work? dunno
  * \param ex x coordinate of line segment's ending point
  * \param ey y coordinate of line segment's ending point
  * \param sqx x coordinate of square's center
@@ -520,7 +520,7 @@ int line_seg_sqr(float ex, float ey, float sqx, float sqy, float sqhlen, float *
 	*ox = (ex >= 0) ? sqx - sqhlen : sqx + sqhlen;
 	*oy = (ey >= 0) ? sqy - sqhlen : sqy + sqhlen;
 	if ((ex != 0) && ((!(cx ^ cy) && ((fabsf(ey * *ox) >= fabsf(ex * *oy)) ^ (sqhlen < 0))) || (cy && !cx)))
-		goto collision;
+		goto collision; //still trying to figure out how the fuck i wrote the line above.
 	if (ey == 0) goto no_collision;
 	float temp = ex; ex = ey, ey = temp;
 	temp = sqx; sqx = sqy; sqy = temp;

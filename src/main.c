@@ -61,6 +61,7 @@ void parse_opts(int argc, char *argv[]){
  * \brief initialize sockets and if a message was received, give it to the right function.
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
+int sock; //socket for everyyyyythinggggg
 int main(int argc, char *argv[]){
 	init_parse();
 	// Parses the commandline arguments
@@ -70,7 +71,6 @@ int main(int argc, char *argv[]){
 	 * Initalize variables, weapons, players and sockets
 	 */
 
-	int sock;
 	struct sockaddr_in newclient;
 	unsigned char buffer[MAX_BUF];
 	int size;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
 
 	ClearAllPlayer();
 	WeaponInit();
-	ReadServerCfg(cfg_file ? cfg_file:"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
+	ReadServerCfg(cfg_file ? :"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
 
 	sock = create_socket();
 	bind_socket(&sock, INADDR_ANY, sv_hostport);
@@ -89,18 +89,13 @@ int main(int argc, char *argv[]){
 
 	init_lua();
 
-	//struct in_addr usgnip = GetIp("usgn.de");
-	/*
-	 FD_ZERO(&descriptor);
-	 FD_SET(readsocket, &descriptor);
-	 */
 	OnServerStart();
 
 	// moved since usgnregister requires a send queue
 	init_queue(&send_q);
 	ReadMap();
-	if (!no_usgn) //modify into optional offline mode
-	  UsgnRegister(sock);
+	if (!no_usgn)
+	  UsgnRegister();
 
 	init_optable();
 	start_stream();
@@ -118,13 +113,12 @@ int main(int argc, char *argv[]){
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 0; //1ms = 1000
+	timeout.tv_usec = 0;
 	while (1)
 	{
-
 #ifdef _WIN32
 #else
-		frame++;
+		frame++; //eh.. better to keep these out of script-funcs
 		next.tv_nsec += inc;
 		while (next.tv_nsec > NS_PER_S) { //happens exactly once a second
 			next.tv_nsec -= NS_PER_S;
@@ -132,12 +126,9 @@ int main(int argc, char *argv[]){
 
 			fpsnow = frame - previous;
 			previous = frame;
-			ExecuteFunctionsWithTime(sock);
+			OnSecond();
 		}
 #endif
-		memmove(&lcbuffer[1], lcbuffer, sizeof(short)*(LC_BUFFER_SIZE - 1)*(MAX_CLIENTS)*2); //update lc position buffers
-		CheckForTimeout(sock);
-		CheckAllPlayerForReload(sock);
 		OnFrame();
 
 		FD_ZERO(&descriptor);
@@ -188,21 +179,16 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		check_sendqueue(sock);
+		check_sendqueue();
 
 #ifdef _WIN32
 		Sleep(1000 / sv_fps); //who cares about windows :D
 #else
 		clock_gettime(CLOCK_MONOTONIC, &current);
-		if (((current.tv_sec == next.tv_sec)
-				&& (current.tv_nsec < next.tv_nsec))
-				|| (current.tv_sec < next.tv_sec))
-		{
-			clock_nanosleep(CLOCK_MONOTONIC,
-				TIMER_ABSTIME, &next, NULL);
+		if (((current.tv_sec == next.tv_sec) && (current.tv_nsec < next.tv_nsec)) || (current.tv_sec < next.tv_sec)) {
+			clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
 		} else {
-			next.tv_nsec = current.tv_nsec +
-				(current.tv_sec - next.tv_sec) * NS_PER_S;
+			next.tv_nsec = current.tv_nsec + (current.tv_sec - next.tv_sec) * NS_PER_S;
 		}
 #endif
 	}

@@ -38,6 +38,7 @@ unsigned short sv_friendlyfire = 0;
 unsigned short sv_usgnonly = 0;
 unsigned char *sv_password = 0;
 unsigned short bot_count = 0;
+unsigned short sv_lan = 0;
 
 unsigned short mp_roundtime = 0;
 unsigned short mp_freezetime = 0;
@@ -162,6 +163,7 @@ void ReadServerCfg(const char* cfg)
 	sv_usgnonly = tointeger(GetValue(clsr, "sv_usgnonly", "0"));
 	sv_password = (unsigned char *) GetValue(clsr, "sv_password", "");
 	sv_rcon = (unsigned char *) GetValue(clsr, "sv_rcon", "testing");
+	sv_lan = tointeger(GetValue(clsr, "sv_lan", "0"));
 	bot_count = tointeger(GetValue(clsr, "bot_count", "0"));
 
 	mp_roundtime = tointeger(GetValue(clsr, "mp_roundtime", "5"));

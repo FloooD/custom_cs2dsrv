@@ -230,10 +230,18 @@ int OnSpecmove(int id, int newx, int newy){
  0 - OK
  */
 int OnServerStart(){
-	time_t rawtime;
-	time(&rawtime);
 	printf("********** Server started **********\n");
 	printf("Listening at port %d and using name '%s'\n", sv_hostport, sv_name);
+
+	ClearAllPlayer();
+	WeaponInit();
+	init_lua();
+	init_queue(&send_q);
+	ReadMap();
+	init_optable();
+	start_stream();
+	if (!no_usgn && !sv_lan) UsgnRegister();
+
 	INVOKE("start", "");
 }
 

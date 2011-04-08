@@ -64,45 +64,32 @@ void parse_opts(int argc, char *argv[]){
 int sock; //socket for everyyyyythinggggg
 int main(int argc, char *argv[]){
 	init_parse();
+
 	// Parses the commandline arguments
 	parse_opts(argc, argv); // IE: ./server -cserver.cfg --name "My Server"
 
-	/**
-	 * Initalize variables, weapons, players and sockets
-	 */
+	// server config
+	ReadServerCfg(cfg_file ? :"server.cfg");
 
+	// init sockets
 	struct sockaddr_in newclient;
 	unsigned char buffer[MAX_BUF];
 	int size;
 	fd_set descriptor; //I don't know
-
-	ClearAllPlayer();
-	WeaponInit();
-	ReadServerCfg(cfg_file ? :"server.cfg"); // Reads the server.cfg file (We can also check argv for --cfg or -c flag
-
 	sock = create_socket();
 	bind_socket(&sock, INADDR_ANY, sv_hostport);
+
+	// on termination
 	atexit(&cleanup);
 	signal(SIGABRT, &exit);
 	signal(SIGTERM, &exit);
 	signal(SIGINT, &exit);
 
-	init_lua();
-
+	// initialize rest of stuff
 	OnServerStart();
 
-	// moved since usgnregister requires a send queue
-	init_queue(&send_q);
-	ReadMap();
-	if (!no_usgn)
-	  UsgnRegister();
-
-	init_optable();
-	start_stream();
-
-#ifdef _WIN32
-//hahahahaha windows lol
-#else
+#ifndef _WIN32
+	// fps control
 	const int inc = NS_PER_S / sv_fps;
 	int frame = 0;
 	int previous = 0;
@@ -111,14 +98,15 @@ int main(int argc, char *argv[]){
 	clock_gettime(CLOCK_MONOTONIC, &next);
 #endif
 
+	// timeval for select
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
-	while (1)
-	{
-#ifdef _WIN32
-#else
-		frame++; //eh.. better to keep these out of script-funcs
+
+	//main loop
+	while (1) {
+#ifndef _WIN32
+		frame++;
 		next.tv_nsec += inc;
 		while (next.tv_nsec > NS_PER_S) { //happens exactly once a second
 			next.tv_nsec -= NS_PER_S;

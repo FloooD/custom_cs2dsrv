@@ -37,6 +37,7 @@ extern unsigned short sv_friendlyfire;
 extern unsigned short sv_usgnonly;
 extern unsigned char *sv_password;
 extern unsigned char *sv_rcon;
+extern unsigned short sv_lan;
 extern unsigned short bot_count;
 
 extern unsigned short mp_roundtime;
